@@ -127,3 +127,11 @@ TrieNode* lookup_child(TrieNode *node, char c) {
     }
     return NULL;
 }
+
+void trie_node_add_child(TrieNode *node, char c, TrieNode *child) {
+    TrieChild *new = malloc(sizeof(TrieChild));
+    new->next = node->first_child;
+    new->node = child;
+    new->c = c;
+    node->first_child = new->next;
+}

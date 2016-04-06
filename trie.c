@@ -103,6 +103,11 @@ codeword trie_get(Trie *t, const char *w) {
     return 0;
 }
 
+void trie_destroy(Trie *t) {
+    t = NULL; // stub
+    return;
+}
+
 // Internal functions implementation.
 
 TrieNode* trie_node_create(const char *str, codeword cw) {

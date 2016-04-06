@@ -25,13 +25,17 @@
 #ifndef TRIE_H
 #define TRIE_H
 
+#ifndef NULL
+#define NULL 0
+#endif
+
 typedef struct trie_child TrieChild;
 typedef struct trie_node TrieNode;
 typedef struct trie Trie;
 
-int trie_init(Trie *t);
-int trie_put(Trie *t, const char *w);
-int trie_get(Trie *t, const char *w);
-int trie_destroy(Trie *t);
+void trie_init    (Trie *t);
+void trie_put     (Trie *t, const char *w);
+int  trie_get     (Trie *t, const char *w);
+void trie_destroy (Trie *t);
 
 #endif

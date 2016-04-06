@@ -32,8 +32,6 @@
 #include <stdlib.h>
 #include <string.h>
 
-typedef unsigned int codeword;
-
 // Implementations of the structs required in the header.
 
 struct trie_child {
@@ -63,7 +61,7 @@ TrieNode* lookup_child        (TrieNode *node, char c);
 
 void trie_init(Trie *t) {
     t->root = trie_node_create("", 0);
-    t->next_cw = 0;
+    t->next_cw = 1;
 }
 
 void trie_put(Trie *t, const char *w) {
@@ -88,6 +86,21 @@ void trie_put(Trie *t, const char *w) {
     trie_node_add_child(cursor, w[i], trie_node_create(w, t->next_cw));
     // Update the next code word.
     t->next_cw++;
+}
+
+codeword trie_get(Trie *t, const char *w) {
+    TrieNode *cursor = t->root;
+    TrieNode *next;
+    unsigned int wlen = strlen(w);
+    unsigned int i = 0;
+    while ((next = lookup_child(cursor, w[i])) != NULL && i < wlen) {
+        cursor = next;
+        i++;
+    }
+    if (i == wlen) {
+        return cursor->cw;
+    }
+    return 0;
 }
 
 // Internal functions implementation.

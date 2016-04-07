@@ -61,7 +61,9 @@ TrieNode* lookup_child        (TrieNode *node, char c);
 
 void trie_init(Trie *t) {
     t->root = trie_node_create("", 0);
-    t->next_cw = 1;
+    // The root is always ignored when looking for an entry,
+    // so its codeword is irrelevant.
+    t->next_cw = 0;
 }
 
 void trie_put(Trie *t, const char *w) {

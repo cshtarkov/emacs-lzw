@@ -72,7 +72,7 @@ void trie_put(Trie *t, const char *w) {
     TrieNode *next;
     unsigned int wlen = strlen(w);
     unsigned int i = 0;
-    while ((next = lookup_child(cursor, w[i])) != NULL && i < wlen) {
+    while (i < wlen && (next = lookup_child(cursor, w[i])) != NULL) {
         cursor = next;
         i++;
     }
@@ -96,7 +96,7 @@ codeword trie_get(Trie *t, const char *w) {
     TrieNode *next;
     unsigned int wlen = strlen(w);
     unsigned int i = 0;
-    while ((next = lookup_child(cursor, w[i])) != NULL && i < wlen) {
+    while (i < wlen && (next = lookup_child(cursor, w[i])) != NULL) {
         cursor = next;
         i++;
     }
@@ -137,5 +137,8 @@ void trie_node_add_child(TrieNode *node, char c, TrieNode *child) {
     new->next = node->first_child;
     new->node = child;
     new->c = c;
-    node->first_child = new->next;
+    node->first_child = new;
+    TrieChild *cursor;
+    for(cursor = node->first_child; cursor != NULL; cursor = cursor->next) {
+    }
 }

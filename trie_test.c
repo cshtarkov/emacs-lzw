@@ -34,7 +34,39 @@ void test_init() {
     assert(t != NULL);
 }
 
+#define INSERTIONS(t) \
+    trie_put(t, "a"); \
+    trie_put(t, "b"); \
+    trie_put(t, "c"); \
+    trie_put(t, "ab"); \
+    trie_put(t, "ab"); \
+    trie_put(t, "ab"); \
+    trie_put(t, "aa"); \
+    trie_put(t, "ab"); \
+    trie_put(t, "ba"); \
+    trie_put(t, "bb"); \
+    trie_put(t, "ca"); \
+    trie_put(t, "cc"); \
+    trie_put(t, "aaa");
+
+void test_put() {
+    Trie *t = trie_init();
+    INSERTIONS(t);
+}
+
+void test_get() {
+    Trie *t = trie_init();
+    INSERTIONS(t);
+    assert(trie_get(t, "a") == 1);
+    assert(trie_get(t, "b") == 2);
+    assert(trie_get(t, "c") == 3);
+    assert(trie_get(t, "ca") == 8);
+    assert(trie_get(t, "aaa") == 10);
+}
+
 int main(void) {
     test_init();
+    test_put();
+    test_get();
     return 0;
 }

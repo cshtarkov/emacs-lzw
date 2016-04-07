@@ -41,7 +41,7 @@ void compress(const char *src, unsigned int len, codeword *dest) {
         char_buf[0] = c;
         trie_put(dict, char_buf);
         c++;
-    } while(c != 0);
+    } while (c != 0);
 
     // LZW.
     char         substr[BUF_SIZE];
@@ -61,5 +61,53 @@ void compress(const char *src, unsigned int len, codeword *dest) {
             trie_put(dict, substr_char);
             strcpy(substr, char_buf);
         }
+    }
+}
+
+void decompress(const codeword *src, unsigned int len, char *dest) {
+    // Construct initial dictionary.
+    unsigned int   dict_size = 256+1;
+    unsigned int   dict_next = 256+1;
+    // An array of strings.
+    char         **dict      = malloc(sizeof(char*) * dict_size); 
+    // This time it's a short, because it iterates 1-256.
+    short          c;           
+    char           char_buf[2];
+
+    char_buf[1] = '\0';
+    c = 1;
+    do {
+        char_buf[0] = c-1;
+        dict[c] = malloc(sizeof(char) * 2);
+        strcpy(dict[c], char_buf);
+        c++;
+    } while (c <= 256);
+
+    // LZW Decompression.
+    codeword      cw;
+    codeword      cw_prev;
+    char         *dict_entry;
+    char          substr_ch[BUF_SIZE];
+    unsigned int  i = 0;
+
+    strcpy(substr_ch, "");
+    cw_prev = src[i];
+    i++;
+    strcat(dest, dict[cw_prev]);
+    while (i < len) {
+        cw = src[i];
+        dict_entry = dict[cw];
+        strcat(dest, dict_entry);
+        char_buf[0] = dict_entry[0];
+        strcpy(substr_ch, dict_entry);
+        strcat(substr_ch, char_buf);
+        if(dict_next == dict_size) {
+            dict_size *= 2;
+            dict = realloc(dict, sizeof(char*) * dict_size);
+        }
+        dict[dict_next] = malloc(sizeof(char) * (strlen(substr_ch)+1));
+        strcpy(dict[dict_next], substr_ch);
+        dict_next++;
+        cw_prev = cw;
     }
 }

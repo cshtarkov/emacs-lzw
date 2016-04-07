@@ -62,9 +62,8 @@ TrieNode* lookup_child        (TrieNode *node, char c);
 Trie* trie_init() {
     Trie *t = malloc(sizeof(Trie));
     t->root = trie_node_create("", 0);
-    // The root is always ignored when looking for an entry,
-    // so its codeword is irrelevant.
-    t->next_cw = 0;
+    // The codeword 0 is reserved for "entry not found".
+    t->next_cw = 1;
     return t;
 }
 

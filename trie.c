@@ -115,6 +115,7 @@ void trie_destroy(Trie *t) {
 
 TrieNode* trie_node_create(const char *str, codeword cw) {
     TrieNode *tn = malloc(sizeof(TrieNode));
+    tn->str = malloc(sizeof(char) * (strlen(str)+1));
     strcpy(tn->str, str);
     tn->cw = cw;
     tn->first_child = NULL;

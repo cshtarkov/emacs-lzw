@@ -34,7 +34,7 @@ typedef struct trie_node TrieNode;
 typedef struct trie Trie;
 typedef unsigned int codeword;
 
-void     trie_init    (Trie *t);
+Trie*    trie_init    ();
 void     trie_put     (Trie *t, const char *w);
 codeword trie_get     (Trie *t, const char *w);
 void     trie_destroy (Trie *t);

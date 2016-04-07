@@ -59,11 +59,13 @@ TrieNode* lookup_child        (TrieNode *node, char c);
 
 // API implementation.
 
-void trie_init(Trie *t) {
+Trie* trie_init() {
+    Trie *t = malloc(sizeof(Trie));
     t->root = trie_node_create("", 0);
     // The root is always ignored when looking for an entry,
     // so its codeword is irrelevant.
     t->next_cw = 0;
+    return t;
 }
 
 void trie_put(Trie *t, const char *w) {

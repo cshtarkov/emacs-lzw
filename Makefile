@@ -3,7 +3,10 @@ CFLAGS=-W -Wall -Werror
 
 default: all
 
-all: trie_test
+all: test
+
+test: trie_test
+	./trie_test
 
 trie.o:
 	$(CC) $(CFLAGS) trie.c -c -o trie.o

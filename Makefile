@@ -1,5 +1,6 @@
 CC=clang
-CFLAGS=-W -Wall -Werror
+DEBUG=-g
+CFLAGS=-W -Wall -Werror $(DEBUG)
 
 default: all
 

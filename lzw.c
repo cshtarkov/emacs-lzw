@@ -95,6 +95,8 @@ unsigned int decompress(const codeword *src, unsigned int len, char *dest) {
     char         *dict_entry;
     char          substr_ch[BUF_SIZE];
     unsigned int  substr_ch_len;
+    char          encoded[BUF_SIZE];
+    unsigned int  encoded_len;
     unsigned int  i = 0;
     unsigned int  di = 0;
 
@@ -107,21 +109,33 @@ unsigned int decompress(const codeword *src, unsigned int len, char *dest) {
     di+=dict_lens[cw_prev];
     while (i < len) {
         cw = src[i];
-        dict_entry = dict[cw];
-        //strcat(dest, dict_entry);
-        memcpy(dest+di, dict[cw], dict_lens[cw]);
-        di+=dict_lens[cw];
         /* char_buf[0] = dict_entry[0]; */
         /* strcpy(substr_ch, dict[cw_prev]); */
         /* strcat(substr_ch, char_buf); */
-        c = dict[cw][0];
-        memcpy(substr_ch, dict[cw_prev], dict_lens[cw_prev]);
-        substr_ch[dict_lens[cw_prev]] = c;
-        substr_ch_len = dict_lens[cw_prev] + 1;
+        if (dict_lens[cw] > 0) {
+            dict_entry = dict[cw];
+            //strcat(dest, dict_entry);
+            memcpy(dest+di, dict[cw], dict_lens[cw]);
+            di+=dict_lens[cw];
+            // record encoded
+            memcpy(encoded, dict[cw], dict_lens[cw]);
+            encoded_len = dict_lens[cw];
+            //
+            c = dict[cw][0];
+            memcpy(substr_ch, dict[cw_prev], dict_lens[cw_prev]);
+            substr_ch[dict_lens[cw_prev]] = c;
+            substr_ch_len = dict_lens[cw_prev] + 1;
+        } else {
+            encoded[encoded_len] = encoded[0];
+            encoded_len++;
+            memcpy(dest+di, encoded, encoded_len);
+            di+=encoded_len;
+        }
         if(dict_next == dict_size) {
             dict_size *= 2;
             dict = realloc(dict, sizeof(char*) * dict_size);
             dict_lens = realloc(dict_lens, sizeof(unsigned int) * dict_size);
+            memset(dict_lens+dict_next, 0, dict_size-dict_next);
         }
         dict[dict_next] = malloc(sizeof(char) * substr_ch_len);
         //strcpy(dict[dict_next], substr_ch);

@@ -28,7 +28,8 @@
 #include "lzw.h"
 
 void test_compress_text() {
-    const char src[] = "hello_world_hello_hello";
+    //const char src[] = "hello_world_hello_hello";
+    const char src[] = "abababababa";
     unsigned int len = strlen(src);
     codeword dest[256];
     unsigned int dlen = compress(src, len, dest);
@@ -41,15 +42,18 @@ void test_compress_text() {
 }
 
 void test_decompress_text() {
-    const codeword src[] = {105, 102, 109, 109, 112, 96,
-                            120, 112, 115, 109, 101, 96,
-                            257, 259, 261, 269, 260};
-    unsigned int len = 17;
+    /* const codeword src[] = {105, 102, 109, 109, 112, 96, */
+    /*                         120, 112, 115, 109, 101, 96, */
+    /*                         257, 259, 261, 269, 260}; */
+    const codeword src[] = {98, 99, 257, 259, 258, 258};
+    //unsigned int len = 17;
+    unsigned int len = 6;
     char dest[256];
     printf("Source code: \n");
     for(unsigned int i = 0; i < len; i++) {
         printf("%d ", src[i]);
     }
+    printf("\n");
     unsigned int dlen = decompress(src, len, dest);
     printf("Decompressed: ");
     for(unsigned int i = 0; i < dlen; i++) {
@@ -92,6 +96,7 @@ void test_decompress_binary() {
     }
     printf("\n");
 }
+
 void test_reversibility_text() {
     const char src[] = "some_compressed_string_some_string_compressed";
     char dsrc[256];
@@ -99,8 +104,37 @@ void test_reversibility_text() {
     codeword dest[256];
     unsigned int dlen = compress(src, len, dest);
     dlen = decompress(dest, dlen, dsrc);
-    dest[dlen] = '\0';
-    assert(!strcmp(src, dsrc));
+    assert(len == dlen);
+    for(unsigned i = 0; i < len; i++) {
+        assert(src[i] == dsrc[i]);
+    }
+}
+
+void test_reversibility_binary() {
+    const char src[] = {100, 0, 15, 100, 0, 0, 20, 0, 0, 100, 100, 100, 0, 15, 100, 0, 15};
+    char dsrc[256];
+    unsigned int len = 17;
+    codeword dest[256];
+    unsigned int dlen = compress(src, len, dest);
+    printf("\nSSSS:\n");
+    printf("%d\n", dlen);
+    for(unsigned int i = 0; i < dlen; i++) {
+        printf("%d ", dest[i]);
+    }
+    printf("\n");
+    dlen = decompress(dest, dlen, dsrc);
+    printf("len %d == %d\n", len, dlen);
+    //assert(len == dlen);
+    for(unsigned int i = 0; i < len; i++) {
+        //assert(src[i] == dsrc[i]);
+        printf("%d ", src[i]);
+    }
+    printf("\n");
+    for(unsigned int i = 0; i < dlen; i++) {
+        //assert(src[i] == dsrc[i]);
+        printf("%d ", dsrc[i]);
+    }
+    printf("\n");
 }
 
 int main(void) {
@@ -109,5 +143,6 @@ int main(void) {
     test_reversibility_text();
     test_compress_binary();
     test_decompress_binary();
+    test_reversibility_binary();
     return 0;
 }

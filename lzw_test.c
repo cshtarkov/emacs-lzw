@@ -27,7 +27,7 @@
 #include <string.h>
 #include "lzw.h"
 
-void test_compress() {
+void test_compress_text() {
     const char src[] = "hello_world_hello_hello";
     unsigned int len = strlen(src);
     codeword dest[256];
@@ -40,10 +40,10 @@ void test_compress() {
     printf("\n");
 }
 
-void test_decompress() {
-    const codeword src[] = {104, 101, 108, 108, 111, 95,
-                            119, 111, 114, 108, 100, 95,
-                            256, 258, 260, 268, 259};
+void test_decompress_text() {
+    const codeword src[] = {105, 102, 109, 109, 112, 96,
+                            120, 112, 115, 109, 101, 96,
+                            257, 259, 261, 269, 260};
     unsigned int len = 17;
     char dest[256];
     printf("Source code: \n");
@@ -54,7 +54,24 @@ void test_decompress() {
     printf("Decompressed: %s\n", dest);
 }
 
-void test_reversibility() {
+void test_compress_binary() {
+    const char src[] = {15, 20, 100, 0, 255, 30, 0, 5, 15, 20, 100, 0, 30, 0, 15, 20, 100};
+    unsigned int len = 17;
+    codeword dest[256];
+    printf("Source binary: \n");
+    for(unsigned int i = 0; i < len; i++) {
+        printf("%d ", src[i]);
+    }
+    printf("\n");
+    unsigned int dlen = compress(src, len, dest);
+    printf("Compressed:\n");
+    for(unsigned int i = 0; i < dlen; i++) {
+        printf("%d ", dest[i]);
+    }
+    printf("\n");
+}
+
+void test_reversibility_text() {
     const char src[] = "some_compressed_string_some_string_compressed";
     char dsrc[256];
     unsigned int len = strlen(src);
@@ -65,8 +82,9 @@ void test_reversibility() {
 }
 
 int main(void) {
-    test_compress();
-    test_decompress();
-    test_reversibility();
+    test_compress_text();
+    test_decompress_text();
+    test_reversibility_text();
+    test_compress_binary();
     return 0;
 }

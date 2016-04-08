@@ -77,7 +77,7 @@ void trie_put(Trie *t, const char *w, unsigned int wlen) {
     }
     // Handle a special case: putting ""
     if (wlen == 0) {
-        trie_node_add_child(cursor, '\0', trie_node_create("\0", 1, t->next_cw));
+        trie_node_add_child(cursor, '\0', trie_node_create("\0", 0, t->next_cw));
         t->next_cw++;
         return;
     }

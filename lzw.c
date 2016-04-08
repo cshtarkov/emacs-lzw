@@ -39,30 +39,32 @@ unsigned int compress(const char *src, unsigned int len, codeword *dest) {
     char_buf[1] = '\0';
     do {
         char_buf[0] = c;
-        trie_put(dict, char_buf);
+        trie_put(dict, char_buf, 1);
         c++;
     } while (c != 0);
 
     // LZW.
     char         substr[BUF_SIZE];
-    char         substr_char[BUF_SIZE]; // substr+ch
+    unsigned int substr_len;
     unsigned int di = 0;                // Index in *dest
 
-    strcpy(substr, "");
+    substr_len = 0;
     for(unsigned int i = 0; i < len; i++) {
-        char_buf[0] = src[i];
-        strcpy(substr_char, substr);
-        strcat(substr_char, char_buf);
-        if(trie_get(dict, substr_char) != 0) {
-            strcpy(substr, substr_char);
+        c = src[i];
+        substr[substr_len] = c;
+        substr_len++;
+        if(trie_get(dict, substr, substr_len) != 0) {
         } else {
-            dest[di] = trie_get(dict, substr);
+            substr_len--;
+            dest[di] = trie_get(dict, substr, substr_len);
             di++;
-            trie_put(dict, substr_char);
-            strcpy(substr, char_buf);
+            substr_len++;
+            trie_put(dict, substr, substr_len);
+            substr[0] = c;
+            substr_len = 1;
         }
     }
-    dest[di] = trie_get(dict, substr);
+    dest[di] = trie_get(dict, substr, substr_len);
     di++;
     return di;
 }

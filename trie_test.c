@@ -34,20 +34,20 @@ void test_init() {
     assert(t != NULL);
 }
 
-#define INSERTIONS(t) \
-    trie_put(t, "a"); \
-    trie_put(t, "b"); \
-    trie_put(t, "c"); \
-    trie_put(t, "ab"); \
-    trie_put(t, "ab"); \
-    trie_put(t, "ab"); \
-    trie_put(t, "aa"); \
-    trie_put(t, "ab"); \
-    trie_put(t, "ba"); \
-    trie_put(t, "bb"); \
-    trie_put(t, "ca"); \
-    trie_put(t, "cc"); \
-    trie_put(t, "aaa");
+#define INSERTIONS(t)                           \
+    trie_put(t, "a", 1);                        \
+    trie_put(t, "b", 1);                        \
+    trie_put(t, "c", 1);                        \
+    trie_put(t, "ab", 2);                       \
+    trie_put(t, "ab", 2);                       \
+    trie_put(t, "ab", 2);                       \
+    trie_put(t, "aa", 2);                       \
+    trie_put(t, "ab", 2);                       \
+    trie_put(t, "ba", 2);                       \
+    trie_put(t, "bb", 2);                       \
+    trie_put(t, "ca", 2);                       \
+    trie_put(t, "cc", 2);                       \
+    trie_put(t, "aaa", 3);
 
 void test_put() {
     Trie *t = trie_init();
@@ -57,11 +57,11 @@ void test_put() {
 void test_get() {
     Trie *t = trie_init();
     INSERTIONS(t);
-    assert(trie_get(t, "a") == 1);
-    assert(trie_get(t, "b") == 2);
-    assert(trie_get(t, "c") == 3);
-    assert(trie_get(t, "ca") == 8);
-    assert(trie_get(t, "aaa") == 10);
+    assert(trie_get(t, "a", 1) == 1);
+    assert(trie_get(t, "b", 1) == 2);
+    assert(trie_get(t, "c", 1) == 3);
+    assert(trie_get(t, "ca", 2) == 8);
+    assert(trie_get(t, "aaa", 3) == 10);
 }
 
 int main(void) {

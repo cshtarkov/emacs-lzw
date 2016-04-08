@@ -35,8 +35,8 @@ typedef struct trie Trie;
 typedef unsigned int codeword;
 
 Trie*    trie_init    ();
-void     trie_put     (Trie *t, const char *w);
-codeword trie_get     (Trie *t, const char *w);
+void     trie_put     (Trie *t, const char *w, unsigned int wlen);
+codeword trie_get     (Trie *t, const char *w, unsigned int wlen);
 void     trie_destroy (Trie *t);
 
 #endif

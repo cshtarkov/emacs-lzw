@@ -53,7 +53,7 @@ struct trie {
 
 // Prototypes of internal functions.
 
-TrieNode* trie_node_create    (const char *str, codeword cw);
+TrieNode* trie_node_create    (const char *str, unsigned int len, codeword cw);
 void      trie_node_add_child (TrieNode *node, char c, TrieNode *child);
 TrieNode* lookup_child        (TrieNode *node, char c);
 
@@ -61,16 +61,15 @@ TrieNode* lookup_child        (TrieNode *node, char c);
 
 Trie* trie_init() {
     Trie *t = malloc(sizeof(Trie));
-    t->root = trie_node_create("", 0);
+    t->root = trie_node_create("", 0, 0);
     // The codeword 0 is reserved for "entry not found".
     t->next_cw = 1;
     return t;
 }
 
-void trie_put(Trie *t, const char *w) {
+void trie_put(Trie *t, const char *w, unsigned int wlen) {
     TrieNode *cursor = t->root;
     TrieNode *next;
-    unsigned int wlen = strlen(w);
     unsigned int i = 0;
     while (i < wlen && (next = lookup_child(cursor, w[i])) != NULL) {
         cursor = next;
@@ -78,7 +77,7 @@ void trie_put(Trie *t, const char *w) {
     }
     // Handle a special case: putting ""
     if (wlen == 0) {
-        trie_node_add_child(cursor, '\0', trie_node_create("", t->next_cw));
+        trie_node_add_child(cursor, '\0', trie_node_create("\0", 1, t->next_cw));
         t->next_cw++;
         return;
     }
@@ -92,15 +91,14 @@ void trie_put(Trie *t, const char *w) {
     // Also, i should now equal wlen-1.
     // Now, add a child to the parent (cursor), with edge w[i],
     // that is a node with the new word and next available codeword.
-    trie_node_add_child(cursor, w[i], trie_node_create(w, t->next_cw));
+    trie_node_add_child(cursor, w[i], trie_node_create(w, wlen, t->next_cw));
     // Update the next code word.
     t->next_cw++;
 }
 
-codeword trie_get(Trie *t, const char *w) {
+codeword trie_get(Trie *t, const char *w, unsigned int wlen) {
     TrieNode *cursor = t->root;
     TrieNode *next;
-    unsigned int wlen = strlen(w);
     unsigned int i = 0;
     while (i < wlen && (next = lookup_child(cursor, w[i])) != NULL) {
         cursor = next;
@@ -119,10 +117,10 @@ void trie_destroy(Trie *t) {
 
 // Internal functions implementation.
 
-TrieNode* trie_node_create(const char *str, codeword cw) {
+TrieNode* trie_node_create(const char *str, unsigned int len, codeword cw) {
     TrieNode *tn = malloc(sizeof(TrieNode));
-    tn->str = malloc(sizeof(char) * (strlen(str)+1));
-    strcpy(tn->str, str);
+    tn->str = malloc(sizeof(char) * len);
+    memcpy(tn->str, str, len);
     tn->cw = cw;
     tn->first_child = NULL;
     return tn;

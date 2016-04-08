@@ -33,7 +33,7 @@
 void compress(const char *src, unsigned int len, codeword *dest) {
     // Construct initial dictionary.
     Trie          *dict = trie_init();
-    unsigned char  c    = 0; // Will iterate from 0 to 255
+    unsigned char  c    = 0;    // Will iterate from 0 to 255
     char           char_buf[2]; // String of the form "%c\0".
 
     char_buf[1] = '\0';
@@ -46,7 +46,7 @@ void compress(const char *src, unsigned int len, codeword *dest) {
     // LZW.
     char         substr[BUF_SIZE];
     char         substr_char[BUF_SIZE]; // substr+ch
-    unsigned int di = 0; // Index in *dest
+    unsigned int di = 0;                // Index in *dest
 
     strcpy(substr, "");
     for(unsigned int i = 0; i < len; i++) {

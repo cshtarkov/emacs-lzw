@@ -76,6 +76,12 @@ void trie_put(Trie *t, const char *w) {
         cursor = next;
         i++;
     }
+    // Handle a special case: putting ""
+    if (wlen == 0) {
+        trie_node_add_child(cursor, '\0', trie_node_create("", t->next_cw));
+        t->next_cw++;
+        return;
+    }
     if (i == wlen) {
         // This can occur iff W is already in T.
         return;

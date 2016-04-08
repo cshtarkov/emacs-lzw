@@ -28,7 +28,7 @@
 #include "lzw.h"
 
 void test_compress() {
-    const char src[] = "hello_world_hello_hello_hello";
+    const char src[] = "hello_world_hello_hello";
     unsigned int len = strlen(src);
     codeword dest[256];
     unsigned int dlen = compress(src, len, dest);
@@ -40,7 +40,33 @@ void test_compress() {
     printf("\n");
 }
 
+void test_decompress() {
+    const codeword src[] = {104, 101, 108, 108, 111, 95,
+                            119, 111, 114, 108, 100, 95,
+                            256, 258, 260, 268, 259};
+    unsigned int len = 17;
+    char dest[256];
+    printf("Source code: \n");
+    for(unsigned int i = 0; i < len; i++) {
+        printf("%d ", src[i]);
+    }
+    decompress(src, len, dest);
+    printf("Decompressed: %s\n", dest);
+}
+
+void test_reversibility() {
+    const char src[] = "some_compressed_string_some_string_compressed";
+    char dsrc[256];
+    unsigned int len = strlen(src);
+    codeword dest[256];
+    unsigned int dlen = compress(src, len, dest);
+    decompress(dest, dlen, dsrc);
+    assert(!strcmp(src, dsrc));
+}
+
 int main(void) {
     test_compress();
+    test_decompress();
+    test_reversibility();
     return 0;
 }

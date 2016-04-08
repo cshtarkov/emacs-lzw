@@ -62,14 +62,15 @@ unsigned int compress(const char *src, unsigned int len, codeword *dest) {
             strcpy(substr, char_buf);
         }
     }
-
-    return di-1;
+    dest[di] = trie_get(dict, substr);
+    di++;
+    return di;
 }
 
 void decompress(const codeword *src, unsigned int len, char *dest) {
     // Construct initial dictionary.
-    unsigned int   dict_size = 256+1;
-    unsigned int   dict_next = 256+1;
+    unsigned int   dict_size = 256;
+    unsigned int   dict_next = 256;
     // An array of strings.
     char         **dict      = malloc(sizeof(char*) * dict_size); 
     // This time it's a short, because it iterates 1-256.
@@ -77,13 +78,13 @@ void decompress(const codeword *src, unsigned int len, char *dest) {
     char           char_buf[2];
 
     char_buf[1] = '\0';
-    c = 1;
+    c = 0;
     do {
-        char_buf[0] = c-1;
+        char_buf[0] = c;
         dict[c] = malloc(sizeof(char) * 2);
         strcpy(dict[c], char_buf);
         c++;
-    } while (c <= 256);
+    } while (c < 256);
 
     // LZW Decompression.
     codeword      cw;
@@ -95,13 +96,13 @@ void decompress(const codeword *src, unsigned int len, char *dest) {
     strcpy(substr_ch, "");
     cw_prev = src[i];
     i++;
-    strcat(dest, dict[cw_prev]);
+    strcpy(dest, dict[cw_prev]);
     while (i < len) {
         cw = src[i];
         dict_entry = dict[cw];
         strcat(dest, dict_entry);
         char_buf[0] = dict_entry[0];
-        strcpy(substr_ch, dict_entry);
+        strcpy(substr_ch, dict[cw_prev]);
         strcat(substr_ch, char_buf);
         if(dict_next == dict_size) {
             dict_size *= 2;
@@ -111,5 +112,6 @@ void decompress(const codeword *src, unsigned int len, char *dest) {
         strcpy(dict[dict_next], substr_ch);
         dict_next++;
         cw_prev = cw;
+        i++;
     }
 }

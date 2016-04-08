@@ -28,7 +28,6 @@
 #include "lzw.h"
 
 void test_compress_text() {
-    //const char src[] = "hello_world_hello_hello";
     const char src[] = "abababababa";
     unsigned int len = strlen(src);
     codeword dest[256];
@@ -42,11 +41,7 @@ void test_compress_text() {
 }
 
 void test_decompress_text() {
-    /* const codeword src[] = {105, 102, 109, 109, 112, 96, */
-    /*                         120, 112, 115, 109, 101, 96, */
-    /*                         257, 259, 261, 269, 260}; */
     const codeword src[] = {98, 99, 257, 259, 258, 258};
-    //unsigned int len = 17;
     unsigned int len = 6;
     char dest[256];
     printf("Source code: \n");
@@ -108,6 +103,7 @@ void test_reversibility_text() {
     for(unsigned i = 0; i < len; i++) {
         assert(src[i] == dsrc[i]);
     }
+    printf("pass\n");
 }
 
 void test_reversibility_binary() {
@@ -116,33 +112,28 @@ void test_reversibility_binary() {
     unsigned int len = 17;
     codeword dest[256];
     unsigned int dlen = compress(src, len, dest);
-    printf("\nSSSS:\n");
-    printf("%d\n", dlen);
-    for(unsigned int i = 0; i < dlen; i++) {
-        printf("%d ", dest[i]);
-    }
-    printf("\n");
     dlen = decompress(dest, dlen, dsrc);
-    printf("len %d == %d\n", len, dlen);
-    //assert(len == dlen);
+    assert(len == dlen);
     for(unsigned int i = 0; i < len; i++) {
-        //assert(src[i] == dsrc[i]);
-        printf("%d ", src[i]);
+        assert(src[i] == dsrc[i]);
     }
-    printf("\n");
-    for(unsigned int i = 0; i < dlen; i++) {
-        //assert(src[i] == dsrc[i]);
-        printf("%d ", dsrc[i]);
-    }
-    printf("\n");
+    printf("pass\n");
 }
 
+#define heading(s) printf("\n\n--- %s ---\n", s)
+
 int main(void) {
+    heading("text compression");
     test_compress_text();
+    heading("text decompression");
     test_decompress_text();
+    heading("text reversibility");
     test_reversibility_text();
+    heading("binary compression");
     test_compress_binary();
+    heading("binary decompression");
     test_decompress_binary();
+    heading("binary reversibility");
     test_reversibility_binary();
     return 0;
 }

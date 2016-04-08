@@ -18,8 +18,9 @@
     
     Commentary:
 
-    Implementation of the LZW compression algorithm using a Trie
-    with variable codeword length.
+    Implementation of the LZW compression algorithm using a Trie for
+    the dictionary when compressing, and an array of strings when
+    decompressing.
 
 */
 
@@ -43,29 +44,28 @@ unsigned int compress(const char *src, unsigned int len, codeword *dest) {
         c++;
     } while (c != 0);
 
-    // LZW.
+    // LZW Compression.
     char         substr[BUF_SIZE];
     unsigned int substr_len;
-    unsigned int di = 0;                // Index in *dest
+    unsigned int di = 0;        // Index in *dest
 
     substr_len = 0;
-    for(unsigned int i = 0; i < len; i++) {
+    for (unsigned int i = 0; i < len; i++) {
         c = src[i];
         substr[substr_len] = c;
         substr_len++;
-        if(trie_get(dict, substr, substr_len) != 0) {
-        } else {
-            substr_len--;
-            dest[di] = trie_get(dict, substr, substr_len);
+        if (trie_get(dict, substr, substr_len) == 0) {
+            dest[di] = trie_get(dict, substr, substr_len-1);
             di++;
-            substr_len++;
             trie_put(dict, substr, substr_len);
             substr[0] = c;
             substr_len = 1;
         }
     }
+    // Encode last codeword.
     dest[di] = trie_get(dict, substr, substr_len);
     di++;
+    // Returns number of compressed codewords.
     return di;
 }
 
@@ -73,14 +73,14 @@ unsigned int decompress(const codeword *src, unsigned int len, char *dest) {
     // Construct initial dictionary.
     unsigned int   dict_size = 256+1;
     unsigned int   dict_next = 256+1;
-    // An array of strings.
+    // An array of unterminated strings.
     char         **dict      = malloc(sizeof(char*) * dict_size); 
+    // The length of each string in dict, because they are not
+    // null-terminated.
     unsigned int  *dict_lens = malloc(sizeof(unsigned int) * dict_size);
     // This time it's a short, because it iterates 1-256.
     short          c;           
-    char           char_buf[2];
 
-    char_buf[1] = '\0';
     c = 1;
     do {
         dict[c] = malloc(sizeof(char));
@@ -90,60 +90,71 @@ unsigned int decompress(const codeword *src, unsigned int len, char *dest) {
     } while (c <= 256);
 
     // LZW Decompression.
-    codeword      cw;
-    codeword      cw_prev;
-    char         *dict_entry;
-    char          substr_ch[BUF_SIZE];
-    unsigned int  substr_ch_len;
-    char          encoded[BUF_SIZE];
-    unsigned int  encoded_len;
-    unsigned int  i = 0;
-    unsigned int  di = 0;
+    codeword     cw;
+    codeword     cw_prev;
+    // For building the codeword translations.
+    char         substr_ch[BUF_SIZE];
+    unsigned int substr_ch_len = 0;
+    // The last encoded string, used when resolving the exception
+    // to the algorithm.
+    char         encoded[BUF_SIZE];
+    unsigned int encoded_len;
+    unsigned int i  = 0; // Index in *src
+    unsigned int di = 0; // Index in *dest
 
-    //strcpy(substr_ch, "");
-    substr_ch_len = 0;
     cw_prev = src[i];
     i++;
-    //strcpy(dest, dict[cw_prev]);
+    // Encode the first codeword.
     memcpy(dest+di, dict[cw_prev], dict_lens[cw_prev]);
-    di+=dict_lens[cw_prev];
+    di += dict_lens[cw_prev];
     while (i < len) {
         cw = src[i];
-        /* char_buf[0] = dict_entry[0]; */
-        /* strcpy(substr_ch, dict[cw_prev]); */
-        /* strcat(substr_ch, char_buf); */
         if (dict_lens[cw] > 0) {
-            dict_entry = dict[cw];
-            //strcat(dest, dict_entry);
+            // The codeword is in the dictionary.
+            // Encode it.
             memcpy(dest+di, dict[cw], dict_lens[cw]);
-            di+=dict_lens[cw];
-            // record encoded
+            di += dict_lens[cw];
+            // Remember that it was encoded.
             memcpy(encoded, dict[cw], dict_lens[cw]);
             encoded_len = dict_lens[cw];
-            //
+            // Build the next entry as entry + entry[0].
             c = dict[cw][0];
             memcpy(substr_ch, dict[cw_prev], dict_lens[cw_prev]);
             substr_ch[dict_lens[cw_prev]] = c;
             substr_ch_len = dict_lens[cw_prev] + 1;
         } else {
+            // The codeword is NOT in the dictionary.
+            // Encode the last encoded string, and repeat the
+            // first character - used for resolving the exception.
             encoded[encoded_len] = encoded[0];
             encoded_len++;
             memcpy(dest+di, encoded, encoded_len);
-            di+=encoded_len;
+            di += encoded_len;
         }
-        if(dict_next == dict_size) {
+
+        if (dict_next == dict_size) {
+            // There is no more space available in the dictionary,
+            // so double it in size.
             dict_size *= 2;
             dict = realloc(dict, sizeof(char*) * dict_size);
             dict_lens = realloc(dict_lens, sizeof(unsigned int) * dict_size);
+            // If a length of a string as specified in dict_lens is
+            // 0, then the string is assumed to be missing.
+            // So it's important to set the lengths of currently
+            // missing entries to 0.
             memset(dict_lens+dict_next, 0, dict_size-dict_next);
         }
+        // Add the current entry (substr_ch) to the dictionary.
         dict[dict_next] = malloc(sizeof(char) * substr_ch_len);
-        //strcpy(dict[dict_next], substr_ch);
         memcpy(dict[dict_next], substr_ch, substr_ch_len);
         dict_lens[dict_next] = substr_ch_len;
         dict_next++;
+        // Set the previous codeword.
         cw_prev = cw;
+        // Move along in *src.
         i++;
     }
+
+    // Return the number of decoded bytes.
     return di;
 }

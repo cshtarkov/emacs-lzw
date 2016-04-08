@@ -128,7 +128,7 @@ TrieNode* trie_node_create(const char *str, unsigned int len, codeword cw) {
 
 TrieNode* lookup_child(TrieNode *node, char c) {
     TrieChild *cursor;
-    for(cursor = node->first_child; cursor != NULL; cursor = cursor->next) {
+    for (cursor = node->first_child; cursor != NULL; cursor = cursor->next) {
         if(cursor->c == c) {
             return cursor->node;
         }
@@ -143,6 +143,6 @@ void trie_node_add_child(TrieNode *node, char c, TrieNode *child) {
     new->c = c;
     node->first_child = new;
     TrieChild *cursor;
-    for(cursor = node->first_child; cursor != NULL; cursor = cursor->next) {
+    for (cursor = node->first_child; cursor != NULL; cursor = cursor->next) {
     }
 }

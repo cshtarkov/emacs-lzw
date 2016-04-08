@@ -30,7 +30,7 @@
 
 #define BUF_SIZE 512
 
-void compress(const char *src, unsigned int len, codeword *dest) {
+unsigned int compress(const char *src, unsigned int len, codeword *dest) {
     // Construct initial dictionary.
     Trie          *dict = trie_init();
     unsigned char  c    = 0;    // Will iterate from 0 to 255
@@ -62,6 +62,8 @@ void compress(const char *src, unsigned int len, codeword *dest) {
             strcpy(substr, char_buf);
         }
     }
+
+    return di-1;
 }
 
 void decompress(const codeword *src, unsigned int len, char *dest) {

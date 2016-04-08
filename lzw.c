@@ -69,12 +69,13 @@ unsigned int compress(const char *src, unsigned int len, codeword *dest) {
     return di;
 }
 
-void decompress(const codeword *src, unsigned int len, char *dest) {
+unsigned int decompress(const codeword *src, unsigned int len, char *dest) {
     // Construct initial dictionary.
     unsigned int   dict_size = 256+1;
     unsigned int   dict_next = 256+1;
     // An array of strings.
     char         **dict      = malloc(sizeof(char*) * dict_size); 
+    unsigned int  *dict_lens = malloc(sizeof(unsigned int) * dict_size);
     // This time it's a short, because it iterates 1-256.
     short          c;           
     char           char_buf[2];
@@ -82,9 +83,9 @@ void decompress(const codeword *src, unsigned int len, char *dest) {
     char_buf[1] = '\0';
     c = 1;
     do {
-        char_buf[0] = c-1;
-        dict[c] = malloc(sizeof(char) * 2);
-        strcpy(dict[c], char_buf);
+        dict[c] = malloc(sizeof(char));
+        dict[c][0] = c-1;
+        dict_lens[c] = 1;
         c++;
     } while (c <= 256);
 
@@ -93,27 +94,42 @@ void decompress(const codeword *src, unsigned int len, char *dest) {
     codeword      cw_prev;
     char         *dict_entry;
     char          substr_ch[BUF_SIZE];
+    unsigned int  substr_ch_len;
     unsigned int  i = 0;
+    unsigned int  di = 0;
 
-    strcpy(substr_ch, "");
+    //strcpy(substr_ch, "");
+    substr_ch_len = 0;
     cw_prev = src[i];
     i++;
-    strcpy(dest, dict[cw_prev]);
+    //strcpy(dest, dict[cw_prev]);
+    memcpy(dest+di, dict[cw_prev], dict_lens[cw_prev]);
+    di+=dict_lens[cw_prev];
     while (i < len) {
         cw = src[i];
         dict_entry = dict[cw];
-        strcat(dest, dict_entry);
-        char_buf[0] = dict_entry[0];
-        strcpy(substr_ch, dict[cw_prev]);
-        strcat(substr_ch, char_buf);
+        //strcat(dest, dict_entry);
+        memcpy(dest+di, dict[cw], dict_lens[cw]);
+        di+=dict_lens[cw];
+        /* char_buf[0] = dict_entry[0]; */
+        /* strcpy(substr_ch, dict[cw_prev]); */
+        /* strcat(substr_ch, char_buf); */
+        c = dict[cw][0];
+        memcpy(substr_ch, dict[cw_prev], dict_lens[cw_prev]);
+        substr_ch[dict_lens[cw_prev]] = c;
+        substr_ch_len = dict_lens[cw_prev] + 1;
         if(dict_next == dict_size) {
             dict_size *= 2;
             dict = realloc(dict, sizeof(char*) * dict_size);
+            dict_lens = realloc(dict_lens, sizeof(unsigned int) * dict_size);
         }
-        dict[dict_next] = malloc(sizeof(char) * (strlen(substr_ch)+1));
-        strcpy(dict[dict_next], substr_ch);
+        dict[dict_next] = malloc(sizeof(char) * substr_ch_len);
+        //strcpy(dict[dict_next], substr_ch);
+        memcpy(dict[dict_next], substr_ch, substr_ch_len);
+        dict_lens[dict_next] = substr_ch_len;
         dict_next++;
         cw_prev = cw;
         i++;
     }
+    return di;
 }

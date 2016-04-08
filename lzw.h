@@ -29,6 +29,6 @@
 #include "trie.h"
 
 unsigned int compress   (const char *src, unsigned int len, codeword *dest);
-void         decompress (const codeword *src, unsigned int len, char *dest);
+unsigned int decompress (const codeword *src, unsigned int len, char *dest);
 
 #endif

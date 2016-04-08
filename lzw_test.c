@@ -50,8 +50,12 @@ void test_decompress_text() {
     for(unsigned int i = 0; i < len; i++) {
         printf("%d ", src[i]);
     }
-    decompress(src, len, dest);
-    printf("Decompressed: %s\n", dest);
+    unsigned int dlen = decompress(src, len, dest);
+    printf("Decompressed: ");
+    for(unsigned int i = 0; i < dlen; i++) {
+        printf("%c", dest[i]);
+    }
+    printf("\n");
 }
 
 void test_compress_binary() {
@@ -71,13 +75,31 @@ void test_compress_binary() {
     printf("\n");
 }
 
+void test_decompress_binary() {
+    const codeword src[] = {16, 21, 101, 1, 256, 31,
+                            1, 6, 257, 259, 262, 265};
+    unsigned int len = 12;
+    char dest[256];
+    printf("Source code: \n");
+    for(unsigned int i = 0; i < len; i++) {
+        printf("%d ", src[i]);
+    }
+    printf("\n");
+    unsigned int dlen = decompress(src, len, dest);
+    printf("Decompressed:\n");
+    for(unsigned int i = 0; i < dlen; i++) {
+        printf("%d ", dest[i]);
+    }
+    printf("\n");
+}
 void test_reversibility_text() {
     const char src[] = "some_compressed_string_some_string_compressed";
     char dsrc[256];
     unsigned int len = strlen(src);
     codeword dest[256];
     unsigned int dlen = compress(src, len, dest);
-    decompress(dest, dlen, dsrc);
+    dlen = decompress(dest, dlen, dsrc);
+    dest[dlen] = '\0';
     assert(!strcmp(src, dsrc));
 }
 
@@ -86,5 +108,6 @@ int main(void) {
     test_decompress_text();
     test_reversibility_text();
     test_compress_binary();
+    test_decompress_binary();
     return 0;
 }

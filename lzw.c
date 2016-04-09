@@ -35,7 +35,7 @@
 
 #define BUF_SIZE 512
 
-unsigned int compress(const char *src, unsigned int len, codeword *dest) {
+unsigned int lzw_compress(const char *src, unsigned int len, codeword *dest) {
     // Construct initial dictionary.
     Trie          *dict = trie_init();
     unsigned char  c    = 0;    // Will iterate from 0 to 255
@@ -73,7 +73,7 @@ unsigned int compress(const char *src, unsigned int len, codeword *dest) {
     return di;
 }
 
-unsigned int decompress(const codeword *src, unsigned int len, char *dest) {
+unsigned int lzw_decompress(const codeword *src, unsigned int len, char *dest) {
     // Construct initial dictionary.
     unsigned int   dict_size = 256+1;
     unsigned int   dict_next = 256+1;

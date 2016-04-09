@@ -21,6 +21,10 @@
     Implementation of the LZW compression algorithm using a Trie for
     the dictionary when compressing, and an array of strings when
     decompressing.
+    
+    The output of the compression is an array of fixed-length codewords.
+    Writing them efficiently to a file is handled by a different
+    component, io.c
 
 */
 
@@ -115,6 +119,8 @@ unsigned int decompress(const codeword *src, unsigned int len, char *dest) {
             memcpy(dest+di, dict[cw], dict_lens[cw]);
             di += dict_lens[cw];
             // Remember that it was encoded.
+            // TODO: Remember only the index in the dictionary
+            // instead of the whole string.
             memcpy(encoded, dict[cw], dict_lens[cw]);
             encoded_len = dict_lens[cw];
             // Build the next entry as entry + entry[0].

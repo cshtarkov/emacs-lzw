@@ -38,6 +38,8 @@
 // table, otherwise Emacs will refuse to load the module.
 int plugin_is_GPL_compatible;
 
+// This really should be part of the Emacs module interface,
+// just like make_string.
 emacs_value make_vector(emacs_env *env, const char *contents, ptrdiff_t length) {
     emacs_value i_make_vector = env->intern(env, "make-vector");
     emacs_value i_nil = env->intern(env, "nil");
@@ -51,86 +53,103 @@ emacs_value make_vector(emacs_env *env, const char *contents, ptrdiff_t length) 
 
 emacs_value compress_string(emacs_env *env, ptrdiff_t nargs,
                                 emacs_value args[], void *data) {
-    ptrdiff_t len = env->extract_integer(env, args[1]);
-    len++;
-    codeword *code = malloc(sizeof(codeword) * len);
-    char *buf = malloc(sizeof(char) * len);
-    env->copy_string_contents(env, args[0], buf, &len);
-    unsigned int dlen = lzw_compress(buf, len, code);
-    char *code_as_char = malloc(sizeof(codeword) * dlen);
+    ptrdiff_t     len;          // Length of the source string.
+    codeword     *code;         // Compressed string (vector).
+    char         *buf;          // Source string.
+    unsigned int  dlen;         // Length of the compressed string (vector).
+    char         *code_as_char; // Byte-wise representation of the codewords.
 
-    unsigned int i;
-    unsigned int k;
-    unsigned int j;
-    codeword mask;
-    codeword cw;
+    // Read in source string.
+    len = env->extract_integer(env, args[1]) + 1;
+    code = malloc(sizeof(codeword) * len);
+    buf = malloc(sizeof(char) * len);
+    env->copy_string_contents(env, args[0], buf, &len);
+
+    // Compress it.
+    dlen = lzw_compress(buf, len, code);
+    code_as_char = malloc(sizeof(codeword) * dlen);
+
+    // Represent code[] in code_as_char[].
+    // Each multibyte element of code is
+    // represented by several consecutive bytes in
+    // code_as_char.
+    unsigned int i, j, k;
+    codeword mask, cw;
     for (i = 0, k = 0; i < dlen; i++) {
         mask = 255;
-        printf("Code is %d\n", code[i]);
         for (j = 0; j < sizeof(codeword); j++, k++) {
             cw = code[i];
             cw = cw & mask;
             cw = cw >> (j*8);
             code_as_char[k] = cw;
-            printf("Bits (%d): %d\n", j, code_as_char[k]);
             mask = mask << 8;
         }
     }
+
+    // Make a vector out of the compressed string
+    // and cleanup.
     emacs_value compressed = make_vector(env, code_as_char, sizeof(codeword)*dlen);
     free(buf);
     free(code);
     free(code_as_char);
+    // Purposefully ignore those.
     nargs = 0; data = 0;
-    
     return compressed;
 }
 
 emacs_value decompress_string(emacs_env *env, ptrdiff_t nargs,
                                 emacs_value args[], void *data) {
-    ptrdiff_t len = env->extract_integer(env, args[1]);
-    len++;
-    char *code_as_char = malloc(sizeof(char) * len);
-    codeword *code = malloc(sizeof(codeword) * (len/sizeof(codeword)));
+    ptrdiff_t    len;          // Length of the source vector.
+    emacs_value  vec;          // Source vector.
+    char        *code_as_char; // Contents of source vector.
+    codeword    *code;         // Collapse multiple bytes into a single multibyte codeword.
 
-    //env->copy_string_contents(env, args[0], code_as_char, &len);
-    emacs_value vec = args[0];
+    // Read in source vector.
+    len = env->extract_integer(env, args[1]) + 1;
+    code_as_char = malloc(sizeof(char) * len);
+    code = malloc(sizeof(codeword) * (len/sizeof(codeword)));
+    vec = args[0];
     len = env->vec_size(env, vec);
-    for(unsigned int i = 0; i < len; i++) {
+    for (unsigned int i = 0; i < len; i++) {
         code_as_char[i] = env->extract_integer(env, env->vec_get(env, vec, i));
     }
 
-
-    // This assumes a 4 byte codeword!
-    unsigned int i;
-    unsigned int j;
-    for (i = 0, j = 0; i < len; i+=4,j++) {
-        printf("Bits (0): %d", (codeword)code_as_char[i]);
-        printf("Bits (1): %d", (codeword)code_as_char[i+1]<<8);
-        printf("Bits (2): %d", (codeword)code_as_char[i+2]<<16);
-        printf("Bits (3): %d", (codeword)code_as_char[i+3]<<24);
+    // Collapse bytes in code_as_char[] into
+    // multibyte codewords in code[].
+    // TODO: Make it work with arbitarily-sized codewords.
+    // This currently assumes 4 bytes.
+    unsigned int i, j;
+    for (i = 0, j = 0; i < len; i+=4, j++) {
         code[j] = (codeword)code_as_char[i]         |
                   (codeword)code_as_char[i+1] << 8  |
                   (codeword)code_as_char[i+2] << 16 |
                   (codeword)code_as_char[i+3] << 24;
-        printf("Code is: %d", code[j]);
-        printf("\n\n");
     }
     
-    unsigned int str_len = sizeof(char) * (len*10);
-    char *str = malloc(sizeof(char) * str_len);
-    unsigned int dlen = 0;
+    unsigned int  str_len;      // Length of decompressed string.
+    char         *str;          // Decompressed string.
+    unsigned int  dlen;         // Bytes decompressed so far.
+
+    // Make a generous assumption for the length of
+    // the decompressed string. This will get doubled
+    // when insufficient.
+    str_len = sizeof(char) * (len*10);
+    str = malloc(sizeof(char) * str_len);
+    dlen = 0;
+
+    // Try to decompress the string into str_len bytes.
     while ((dlen = lzw_decompress(code, len, str, str_len)) == str_len) {
-        return env->make_string(env, "double", 6);
         str_len *= 2;
         str = realloc(str, sizeof(char) * str_len);
     }
-    for(i = 0; i < dlen; i++) {
-        printf("%c", str[i]);
-    }
-    printf("\n");
+
+    // Convert the decompressed string into an Emacs string
+    // and cleanup.
     emacs_value decompressed = env->make_string(env, str, dlen-1);
     free(str);
     free(code);
+    free(code_as_char);
+    // Purposefully ignore those.
     nargs = 0; data = 0;
     return decompressed;
 }
@@ -138,6 +157,7 @@ emacs_value decompress_string(emacs_env *env, ptrdiff_t nargs,
 int emacs_module_init(struct emacs_runtime *ert) {
     emacs_env *env = ert->get_environment(ert);
 
+    // Construct functions and symbols.
     emacs_value f_compress_string = env->make_function(env, 2, 2,
                                                        compress_string,
                                                        NULL, NULL);
@@ -147,6 +167,7 @@ int emacs_module_init(struct emacs_runtime *ert) {
                                                          NULL, NULL);
     emacs_value i_decompress_string = env->intern(env, "lzw--decompress-string");
 
+    // Use `fset' to set the symbols to the functions.
     emacs_value i_fset = env->intern(env, "fset");
     emacs_value args_compress_string[] = {
         i_compress_string,

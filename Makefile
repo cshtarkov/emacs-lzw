@@ -19,11 +19,11 @@ lzw.o:
 io.o:
 	$(CC) $(CFLAGS) io.c -c -o io.o
 
-emacs-lzw.so: emacs-lzw.o lzw.o io.o trie.o
-	$(CC) -shared emacs-lzw.o lzw.o io.o trie.o -o emacs-lzw.so
+emacs_lzw.so: emacs_lzw.o lzw.o io.o trie.o
+	$(CC) -shared emacs_lzw.o lzw.o io.o trie.o -o emacs_lzw.so
 
-emacs-lzw.o:
-	$(CC) $(CFLAGS) emacs-lzw.c -c -o emacs-lzw.o
+emacs_lzw.o:
+	$(CC) $(CFLAGS) emacs_lzw.c -c -o emacs_lzw.o
 
 trie_test: trie.o
 	$(CC) trie_test.c trie.o -o trie_test

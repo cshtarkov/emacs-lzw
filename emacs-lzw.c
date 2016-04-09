@@ -38,6 +38,17 @@
 // table, otherwise Emacs will refuse to load the module.
 int plugin_is_GPL_compatible;
 
+emacs_value make_vector(emacs_env *env, const char *contents, ptrdiff_t length) {
+    emacs_value i_make_vector = env->intern(env, "make-vector");
+    emacs_value i_nil = env->intern(env, "nil");
+    emacs_value args[] = { env->make_integer(env, length), i_nil };
+    emacs_value vec = env->funcall(env, i_make_vector, 2, args);
+    for(unsigned int i = 0; i < length; i++) {
+        env->vec_set(env, vec, i, env->make_integer(env, contents[i]));
+    }
+    return vec;
+}
+
 emacs_value compress_string(emacs_env *env, ptrdiff_t nargs,
                                 emacs_value args[], void *data) {
     ptrdiff_t len = env->extract_integer(env, args[1]);
@@ -65,9 +76,10 @@ emacs_value compress_string(emacs_env *env, ptrdiff_t nargs,
             mask = mask << 8;
         }
     }
-    emacs_value compressed = env->make_string(env, code_as_char, sizeof(codeword)*dlen);
+    emacs_value compressed = make_vector(env, code_as_char, sizeof(codeword)*dlen);
     free(buf);
     free(code);
+    free(code_as_char);
     nargs = 0; data = 0;
     
     return compressed;
@@ -80,7 +92,12 @@ emacs_value decompress_string(emacs_env *env, ptrdiff_t nargs,
     char *code_as_char = malloc(sizeof(char) * len);
     codeword *code = malloc(sizeof(codeword) * (len/sizeof(codeword)));
 
-    env->copy_string_contents(env, args[0], code_as_char, &len);
+    //env->copy_string_contents(env, args[0], code_as_char, &len);
+    emacs_value vec = args[0];
+    len = env->vec_size(env, vec);
+    for(unsigned int i = 0; i < len; i++) {
+        code_as_char[i] = env->extract_integer(env, env->vec_get(env, vec, i));
+    }
 
 
     // This assumes a 4 byte codeword!

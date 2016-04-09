@@ -142,6 +142,9 @@ unsigned int lzw_decompress(const codeword *src, unsigned int len, char *dest, u
             }
             memcpy(dest+di, encoded, encoded_len);
             di += encoded_len;
+            // The substring is now what was last encoded.
+            memcpy(substr_ch, encoded, encoded_len);
+            substr_ch_len = encoded_len;
         }
 
         if (dict_next == dict_size) {

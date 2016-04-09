@@ -28,7 +28,7 @@
 #include "lzw.h"
 
 void test_compress_text() {
-    const char src[] = "abababababa";
+    const char src[] = "abababababababa";
     unsigned int len = strlen(src);
     codeword dest[256];
     unsigned int dlen = lzw_compress(src, len, dest);
@@ -41,8 +41,9 @@ void test_compress_text() {
 }
 
 void test_decompress_text() {
-    const codeword src[] = {98, 99, 257, 259, 258, 258};
-    unsigned int len = 6;
+    const codeword src[] = {105, 102, 109, 109, 112, 96, 120, 112, 115, 109, 101, 96, 257, 259, 261, 269, 260, 268, 258, 273, 272, 271, 275, 112};
+    //const codeword src[] = {98, 99, 257, 259, 258, 261, 259};
+    unsigned int len = 24;
     char dest[256];
     printf("Source code: \n");
     for(unsigned int i = 0; i < len; i++) {
@@ -93,7 +94,8 @@ void test_decompress_binary() {
 }
 
 void test_reversibility_text() {
-    const char src[] = "some_compressed_string_some_string_compressed";
+    //const char src[] = "some_compressed_string_some_string_compressed";
+    const char src[] = "abababababababa";
     char dsrc[256];
     unsigned int len = strlen(src);
     codeword dest[256];

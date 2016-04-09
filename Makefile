@@ -16,6 +16,9 @@ trie.o:
 lzw.o:
 	$(CC) $(CFLAGS) lzw.c -c -o lzw.o
 
+io.o:
+	$(CC) $(CFLAGS) io.c -c -o io.o
+
 trie_test: trie.o
 	$(CC) $(CFLAGS) trie_test.c trie.o -o trie_test
 

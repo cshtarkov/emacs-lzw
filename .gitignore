@@ -1,3 +1,4 @@
 *.o
 trie_test
 /lzw_test
+/emacs-lzw.so

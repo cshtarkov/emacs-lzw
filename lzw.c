@@ -73,7 +73,7 @@ unsigned int lzw_compress(const char *src, unsigned int len, codeword *dest) {
     return di;
 }
 
-unsigned int lzw_decompress(const codeword *src, unsigned int len, char *dest) {
+unsigned int lzw_decompress(const codeword *src, unsigned int len, char *dest, unsigned int dest_len) {
     // Construct initial dictionary.
     unsigned int   dict_size = 256+1;
     unsigned int   dict_next = 256+1;
@@ -116,6 +116,9 @@ unsigned int lzw_decompress(const codeword *src, unsigned int len, char *dest) {
         if (dict_lens[cw] > 0) {
             // The codeword is in the dictionary.
             // Encode it.
+            if (di + dict_lens[cw] >= dest_len) {
+                return di;
+            }
             memcpy(dest+di, dict[cw], dict_lens[cw]);
             di += dict_lens[cw];
             // Remember that it was encoded.
@@ -134,6 +137,9 @@ unsigned int lzw_decompress(const codeword *src, unsigned int len, char *dest) {
             // first character - used for resolving the exception.
             encoded[encoded_len] = encoded[0];
             encoded_len++;
+            if (di + encoded_len >= dest_len) {
+                return di;
+            }
             memcpy(dest+di, encoded, encoded_len);
             di += encoded_len;
         }

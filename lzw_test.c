@@ -31,7 +31,7 @@ void test_compress_text() {
     const char src[] = "abababababa";
     unsigned int len = strlen(src);
     codeword dest[256];
-    unsigned int dlen = compress(src, len, dest);
+    unsigned int dlen = lzw_compress(src, len, dest);
     printf("Source string: %s\n", src);
     printf("Compressed:\n");
     for(unsigned int i = 0; i < dlen; i++) {
@@ -49,7 +49,7 @@ void test_decompress_text() {
         printf("%d ", src[i]);
     }
     printf("\n");
-    unsigned int dlen = decompress(src, len, dest);
+    unsigned int dlen = lzw_decompress(src, len, dest, 256);
     printf("Decompressed: ");
     for(unsigned int i = 0; i < dlen; i++) {
         printf("%c", dest[i]);
@@ -66,7 +66,7 @@ void test_compress_binary() {
         printf("%d ", src[i]);
     }
     printf("\n");
-    unsigned int dlen = compress(src, len, dest);
+    unsigned int dlen = lzw_compress(src, len, dest);
     printf("Compressed:\n");
     for(unsigned int i = 0; i < dlen; i++) {
         printf("%d ", dest[i]);
@@ -84,7 +84,7 @@ void test_decompress_binary() {
         printf("%d ", src[i]);
     }
     printf("\n");
-    unsigned int dlen = decompress(src, len, dest);
+    unsigned int dlen = lzw_decompress(src, len, dest, 256);
     printf("Decompressed:\n");
     for(unsigned int i = 0; i < dlen; i++) {
         printf("%d ", dest[i]);
@@ -97,8 +97,8 @@ void test_reversibility_text() {
     char dsrc[256];
     unsigned int len = strlen(src);
     codeword dest[256];
-    unsigned int dlen = compress(src, len, dest);
-    dlen = decompress(dest, dlen, dsrc);
+    unsigned int dlen = lzw_compress(src, len, dest);
+    dlen = lzw_decompress(dest, dlen, dsrc, 256);
     assert(len == dlen);
     for(unsigned i = 0; i < len; i++) {
         assert(src[i] == dsrc[i]);
@@ -111,8 +111,8 @@ void test_reversibility_binary() {
     char dsrc[256];
     unsigned int len = 17;
     codeword dest[256];
-    unsigned int dlen = compress(src, len, dest);
-    dlen = decompress(dest, dlen, dsrc);
+    unsigned int dlen = lzw_compress(src, len, dest);
+    dlen = lzw_decompress(dest, dlen, dsrc, 256);
     assert(len == dlen);
     for(unsigned int i = 0; i < len; i++) {
         assert(src[i] == dsrc[i]);

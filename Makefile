@@ -1,10 +1,11 @@
 CC=clang
 DEBUG=-g
 CFLAGS=-W -Wall -Werror -fPIC $(DEBUG)
+MODULES_DIR=~/.emacs.d/modules
 
 default: all
 
-all: test emacs-lzw.so
+all: test emacs_lzw.so
 
 test: trie_test lzw_test
 	./trie_test
@@ -33,3 +34,7 @@ lzw_test: lzw.o trie.o
 
 clean:
 	rm *.o
+
+install: emacs_lzw.so
+	mkdir -p $(MODULES_DIR)
+	cp emacs_lzw.so $(MODULES_DIR)

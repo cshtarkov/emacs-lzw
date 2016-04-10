@@ -32,7 +32,7 @@
 typedef struct trie_child TrieChild;
 typedef struct trie_node TrieNode;
 typedef struct trie Trie;
-typedef unsigned int codeword;
+typedef unsigned short codeword;
 
 Trie*    trie_init    ();
 void     trie_put     (Trie *t, const char *w, unsigned int wlen);

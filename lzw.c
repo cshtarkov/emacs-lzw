@@ -115,7 +115,7 @@ unsigned int lzw_decompress(const codeword *src, unsigned int len, char *dest, u
     di += dict_lens[cw_prev];
     while (i < len) {
         cw = src[i];
-        if (dict_lens[cw] > 0) {
+        if (cw < dict_next) {
             // The codeword is in the dictionary.
             // Encode it.
             if (di + dict_lens[cw] >= dest_len) {

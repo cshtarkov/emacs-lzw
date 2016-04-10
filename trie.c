@@ -56,6 +56,8 @@ struct trie {
 TrieNode* trie_node_create    (const char *str, unsigned int len, codeword cw);
 void      trie_node_add_child (TrieNode *node, char c, TrieNode *child);
 TrieNode* lookup_child        (TrieNode *node, char c);
+void      trie_node_destroy(TrieNode *node);
+void      trie_child_destroy(TrieChild *child);
 
 // API implementation.
 
@@ -111,8 +113,8 @@ codeword trie_get(Trie *t, const char *w, unsigned int wlen) {
 }
 
 void trie_destroy(Trie *t) {
-    t = NULL; // stub
-    return;
+    trie_node_destroy(t->root);
+    free(t);
 }
 
 // Internal functions implementation.
@@ -145,4 +147,21 @@ void trie_node_add_child(TrieNode *node, char c, TrieNode *child) {
     TrieChild *cursor;
     for (cursor = node->first_child; cursor != NULL; cursor = cursor->next) {
     }
+}
+
+void trie_node_destroy(TrieNode *node) {
+    free(node->str);
+    TrieChild *cursor = node->first_child;
+    TrieChild *next;
+    while (cursor != NULL) {
+        next = cursor->next;
+        trie_child_destroy(cursor);
+        cursor = next;
+    }
+    free(node);
+}
+
+void trie_child_destroy(TrieChild *child) {
+    trie_node_destroy(child->node);
+    free(child);
 }

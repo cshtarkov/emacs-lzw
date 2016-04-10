@@ -69,6 +69,8 @@ unsigned int lzw_compress(const char *src, unsigned int len, codeword *dest) {
     // Encode last codeword.
     dest[di] = trie_get(dict, substr, substr_len);
     di++;
+    // Cleanup
+    trie_destroy(dict);
     // Returns number of compressed codewords.
     return di;
 }
@@ -170,6 +172,12 @@ unsigned int lzw_decompress(const codeword *src, unsigned int len, char *dest, u
         i++;
     }
 
+    // Cleanup
+    for (i = 1; i < dict_next; i++) {
+        free(dict[i]);
+    }
+    free(dict);
+    free(dict_lens);
     // Return the number of decoded bytes.
     return di;
 }

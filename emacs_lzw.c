@@ -105,11 +105,10 @@ emacs_value decompress_string(emacs_env *env, ptrdiff_t nargs,
     codeword    *code;         // Collapse multiple bytes into a single multibyte codeword.
 
     // Read in source vector.
-    len = env->extract_integer(env, args[1]) + 1;
-    code_as_char = malloc(sizeof(char) * len);
-    code = malloc(sizeof(codeword) * (len/sizeof(codeword)));
     vec = args[0];
     len = env->vec_size(env, vec);
+    code_as_char = malloc(sizeof(char) * len);
+    code = malloc(sizeof(codeword) * (len/sizeof(codeword)));
     for (unsigned int i = 0; i < len; i++) {
         code_as_char[i] = env->extract_integer(env, env->vec_get(env, vec, i));
     }
@@ -125,6 +124,7 @@ emacs_value decompress_string(emacs_env *env, ptrdiff_t nargs,
                   (codeword)code_as_char[i+2] << 16 |
                   (codeword)code_as_char[i+3] << 24;
     }
+    len /= sizeof(codeword);
     
     unsigned int  str_len;      // Length of decompressed string.
     char         *str;          // Decompressed string.
@@ -134,13 +134,13 @@ emacs_value decompress_string(emacs_env *env, ptrdiff_t nargs,
     // the decompressed string. This will get doubled
     // when insufficient.
     str_len = sizeof(char) * (len*10);
-    str = malloc(sizeof(char) * str_len);
+    str = malloc(str_len);
     dlen = 0;
 
     // Try to decompress the string into str_len bytes.
     while ((dlen = lzw_decompress(code, len, str, str_len)) == str_len) {
         str_len *= 2;
-        str = realloc(str, sizeof(char) * str_len);
+        str = realloc(str, str_len);
     }
 
     // Convert the decompressed string into an Emacs string
@@ -162,7 +162,7 @@ int emacs_module_init(struct emacs_runtime *ert) {
                                                        compress_string,
                                                        NULL, NULL);
     emacs_value i_compress_string = env->intern(env, "lzw--compress-string");
-    emacs_value f_decompress_string = env->make_function(env, 2, 2,
+    emacs_value f_decompress_string = env->make_function(env, 1, 1,
                                                          decompress_string,
                                                          NULL, NULL);
     emacs_value i_decompress_string = env->intern(env, "lzw--decompress-string");

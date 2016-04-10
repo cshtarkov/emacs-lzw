@@ -27,7 +27,7 @@
 
 #include <stdio.h>
 #include <assert.h>
-#include "trie.h"
+#include "../src/trie.h"
 
 void test_init() {
     Trie *t = trie_init();

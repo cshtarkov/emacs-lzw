@@ -73,17 +73,11 @@ emacs_value compress_string(emacs_env *env, ptrdiff_t nargs,
     // Each multibyte element of code is
     // represented by several consecutive bytes in
     // code_as_char.
-    unsigned int i, j, k;
-    codeword mask, cw;
-    for (i = 0, k = 0; i < dlen; i++) {
-        mask = 255;
-        for (j = 0; j < sizeof(codeword); j++, k++) {
-            cw = code[i];
-            cw = cw & mask;
-            cw = cw >> (j*8);
-            code_as_char[k] = cw;
-            mask = mask << 8;
-        }
+    unsigned int i, j;
+    codeword *cwp;
+    for (i = 0, j = 0; i < dlen * sizeof(codeword); i += sizeof(codeword), j++) {
+        cwp = (codeword*)(code_as_char+i);
+        *cwp = code[j];
     }
 
     // Make a vector out of the compressed string
@@ -115,14 +109,11 @@ emacs_value decompress_string(emacs_env *env, ptrdiff_t nargs,
 
     // Collapse bytes in code_as_char[] into
     // multibyte codewords in code[].
-    // TODO: Make it work with arbitarily-sized codewords.
-    // This currently assumes 4 bytes.
     unsigned int i, j;
-    for (i = 0, j = 0; i < len; i+=4, j++) {
-        code[j] = (codeword)code_as_char[i]         |
-                  (codeword)code_as_char[i+1] << 8  |
-                  (codeword)code_as_char[i+2] << 16 |
-                  (codeword)code_as_char[i+3] << 24;
+    codeword *cwp;
+    for (i = 0, j = 0; i < len; i += sizeof(codeword), j++) {
+        cwp = (codeword*)(code_as_char+i);
+        code[j] = *cwp;
     }
     len /= sizeof(codeword);
     

@@ -52,7 +52,7 @@ emacs_value make_vector(emacs_env *env, const char *contents, ptrdiff_t length) 
 }
 
 emacs_value compress_string(emacs_env *env, ptrdiff_t nargs,
-                                emacs_value args[], void *data) {
+                            emacs_value args[], void *data) {
     ptrdiff_t     len;          // Length of the source string.
     codeword     *code;         // Compressed string (vector).
     char         *buf;          // Source string.
@@ -92,7 +92,7 @@ emacs_value compress_string(emacs_env *env, ptrdiff_t nargs,
 }
 
 emacs_value decompress_string(emacs_env *env, ptrdiff_t nargs,
-                                emacs_value args[], void *data) {
+                              emacs_value args[], void *data) {
     ptrdiff_t    len;          // Length of the source vector.
     emacs_value  vec;          // Source vector.
     char        *code_as_char; // Contents of source vector.

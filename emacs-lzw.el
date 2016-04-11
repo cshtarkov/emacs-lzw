@@ -62,7 +62,8 @@
 (defun lzw-compress-string (str)
   "Returns the compressed form of STR as another string."
   (lzw--with-module
-   (let* ((vec (lzw--compress-string str (length str)))
+   (let* ((str (string-as-unibyte str))
+          (vec (lzw--compress-string str (length str)))
           (unsigned (mapcar (lambda (x) (if (< x 0) (+ x 256) x)) vec)))
      (concat unsigned))))
 

@@ -88,3 +88,6 @@ this LZW implementation."
    (let ((contents (buffer-string)))
      (erase-buffer)
      (insert (lzw-decompress-string contents)))))
+
+(provide 'emacs-lzw)
+;;; emacs-lzw.el ends here

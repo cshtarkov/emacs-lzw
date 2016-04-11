@@ -75,9 +75,9 @@
   "Compresses the contents of the current buffer."
   (interactive)
   (lzw--with-module
-   (let ((contents (buffer-string))
+   (let ((contents (buffer-string)))
      (erase-buffer)
-     (insert (lzw-compress-string contents))))))
+     (insert (lzw-compress-string contents)))))
 
 (defun lzw-decompress-buffer ()
   "Attempts to decompress the contents of the current buffer.

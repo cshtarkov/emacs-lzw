@@ -98,13 +98,12 @@ unsigned int lzw_decompress(const codeword *src, unsigned int len, char *dest, u
     // LZW Decompression.
     codeword     cw;
     codeword     cw_prev;
+    codeword     cw_enc;
     // For building the codeword translations.
     char         substr_ch[BUF_SIZE];
     unsigned int substr_ch_len = 0;
     // The last encoded string, used when resolving the exception
     // to the algorithm.
-    char         encoded[BUF_SIZE];
-    unsigned int encoded_len;
     unsigned int i  = 0; // Index in *src
     unsigned int di = 0; // Index in *dest
 
@@ -113,6 +112,8 @@ unsigned int lzw_decompress(const codeword *src, unsigned int len, char *dest, u
     // Encode the first codeword.
     memcpy(dest+di, dict[cw_prev], dict_lens[cw_prev]);
     di += dict_lens[cw_prev];
+    // Mark the last encoded codeword.
+    cw_enc = cw_prev;
     while (i < len) {
         cw = src[i];
         if (cw < dict_next) {
@@ -124,10 +125,7 @@ unsigned int lzw_decompress(const codeword *src, unsigned int len, char *dest, u
             memcpy(dest+di, dict[cw], dict_lens[cw]);
             di += dict_lens[cw];
             // Remember that it was encoded.
-            // TODO: Remember only the index in the dictionary
-            // instead of the whole string.
-            memcpy(encoded, dict[cw], dict_lens[cw]);
-            encoded_len = dict_lens[cw];
+            cw_enc = cw;
             // Build the next entry as entry + entry[0].
             c = dict[cw][0];
             memcpy(substr_ch, dict[cw_prev], dict_lens[cw_prev]);
@@ -137,16 +135,16 @@ unsigned int lzw_decompress(const codeword *src, unsigned int len, char *dest, u
             // The codeword is NOT in the dictionary.
             // Encode the last encoded string, and repeat the
             // first character - used for resolving the exception.
-            encoded[encoded_len] = encoded[0];
-            encoded_len++;
-            if (di + encoded_len >= dest_len) {
+            memcpy(substr_ch, dict[cw_enc], dict_lens[cw_enc]);
+            substr_ch_len = dict_lens[cw_enc];
+            substr_ch[substr_ch_len] = substr_ch[0];
+            substr_ch_len++;
+            if (di + substr_ch_len >= dest_len) {
                 return di;
             }
-            memcpy(dest+di, encoded, encoded_len);
-            di += encoded_len;
-            // The substring is now what was last encoded.
-            memcpy(substr_ch, encoded, encoded_len);
-            substr_ch_len = encoded_len;
+            memcpy(dest+di, substr_ch, substr_ch_len);
+            di += substr_ch_len;
+            cw_enc = dict_next;
         }
 
         if (dict_next == dict_size) {

@@ -41,15 +41,16 @@ void test_compress_text() {
 }
 
 void test_decompress_text() {
-    const codeword src[] = {105, 102, 109, 109, 112, 96, 120, 112, 115, 109, 101, 96, 257, 259, 261, 269, 260, 268, 258, 273, 272, 271, 275, 112};
-    unsigned int len = 24;
-    char dest[256];
+    const codeword src[] = {41, 105, 102, 109, 109, 112, 96, 120, 112, 115, 109, 101, 96, 257, 259, 261, 269, 260, 268, 258, 273, 272, 271, 275, 112};
+    unsigned int len = 25;
     printf("Source code: \n");
     for(unsigned int i = 0; i < len; i++) {
         printf("%d ", src[i]);
     }
     printf("\n");
-    unsigned int dlen = lzw_decompress(src, len, dest, 256);
+    decompression_meta m = lzw_decompress(src, len);
+    unsigned int dlen = m.dlen;
+    char *dest = m.str;
     printf("Decompressed: ");
     for(unsigned int i = 0; i < dlen; i++) {
         printf("%c", dest[i]);
@@ -78,13 +79,14 @@ void test_decompress_binary() {
     const codeword src[] = {16, 21, 101, 1, 256, 31,
                             1, 6, 257, 259, 262, 265};
     unsigned int len = 12;
-    char dest[256];
     printf("Source code: \n");
     for(unsigned int i = 0; i < len; i++) {
         printf("%d ", src[i]);
     }
     printf("\n");
-    unsigned int dlen = lzw_decompress(src, len, dest, 256);
+    decompression_meta m = lzw_decompress(src, len);
+    unsigned int dlen = m.dlen;
+    char *dest = m.str;
     printf("Decompressed:\n");
     for(unsigned int i = 0; i < dlen; i++) {
         printf("%d ", dest[i]);
@@ -94,11 +96,13 @@ void test_decompress_binary() {
 
 void test_reversibility_text() {
     const char src[] = "abababababababa";
-    char dsrc[256];
+    char *dsrc;
     unsigned int len = strlen(src);
     codeword dest[256];
     unsigned int dlen = lzw_compress(src, len, dest);
-    dlen = lzw_decompress(dest, dlen, dsrc, 256);
+    decompression_meta m = lzw_decompress(dest, dlen);
+    dlen = m.dlen;
+    dsrc = m.str;
     assert(len == dlen);
     for(unsigned i = 0; i < len; i++) {
         assert(src[i] == dsrc[i]);
@@ -108,11 +112,13 @@ void test_reversibility_text() {
 
 void test_reversibility_binary() {
     const char src[] = {100, 0, 15, 100, 0, 0, 20, 0, 0, 100, 100, 100, 0, 15, 100, 0, 15};
-    char dsrc[256];
+    char *dsrc;
     unsigned int len = 17;
     codeword dest[256];
     unsigned int dlen = lzw_compress(src, len, dest);
-    dlen = lzw_decompress(dest, dlen, dsrc, 256);
+    decompression_meta m = lzw_decompress(dest, dlen);
+    dlen = m.dlen;
+    dsrc = m.str;
     assert(len == dlen);
     for(unsigned int i = 0; i < len; i++) {
         assert(src[i] == dsrc[i]);

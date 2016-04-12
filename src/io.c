@@ -47,7 +47,7 @@ int io_write_fd(FILE *fd, const codeword *code, unsigned int len) {
 }
 
 int io_write_fname(const char *name, const codeword *code, unsigned int len) {
-    FILE *fd = fopen(name, "w");
+    FILE *fd = fopen(name, "wb");
     if (fd == NULL) {
         return -1;
     }
@@ -78,7 +78,7 @@ codeword* io_read_fd(FILE *fd) {
 }
 
 codeword* io_read_fname(const char *name) {
-    FILE *fd = fopen(name, "r");
+    FILE *fd = fopen(name, "rb");
     if (fd == NULL) {
         return NULL;
     }

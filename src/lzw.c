@@ -51,7 +51,7 @@ unsigned int lzw_compress(const char *src, unsigned int len, codeword *dest) {
     // LZW Compression.
     char         substr[BUF_SIZE];
     unsigned int substr_len;
-    unsigned int di = 0;        // Index in *dest
+    unsigned int di = 1;        // Index in *dest
 
     substr_len = 0;
     for (unsigned int i = 0; i < len; i++) {
@@ -72,10 +72,11 @@ unsigned int lzw_compress(const char *src, unsigned int len, codeword *dest) {
     // Cleanup
     trie_destroy(dict);
     // Returns number of compressed codewords.
+    dest[0] = len;
     return di;
 }
 
-unsigned int lzw_decompress(const codeword *src, unsigned int len, char *dest, unsigned int dest_len) {
+decompression_meta lzw_decompress(const codeword *src, unsigned int len) {
     // Construct initial dictionary.
     unsigned int   dict_size = 256+1;
     unsigned int   dict_next = 256+1;
@@ -104,8 +105,12 @@ unsigned int lzw_decompress(const codeword *src, unsigned int len, char *dest, u
     unsigned int substr_ch_len = 0;
     // The last encoded string, used when resolving the exception
     // to the algorithm.
-    unsigned int i  = 0; // Index in *src
+    unsigned int i  = 1; // Index in *src
     unsigned int di = 0; // Index in *dest
+
+    // The 0th codeword is the length of the original string.
+    unsigned int dest_len = src[0] + 1;
+    char *dest = malloc(sizeof(char) * dest_len);
 
     cw_prev = src[i];
     i++;
@@ -119,9 +124,6 @@ unsigned int lzw_decompress(const codeword *src, unsigned int len, char *dest, u
         if (cw < dict_next) {
             // The codeword is in the dictionary.
             // Encode it.
-            if (di + dict_lens[cw] >= dest_len) {
-                return di;
-            }
             memcpy(dest+di, dict[cw], dict_lens[cw]);
             di += dict_lens[cw];
             // Remember that it was encoded.
@@ -139,9 +141,6 @@ unsigned int lzw_decompress(const codeword *src, unsigned int len, char *dest, u
             substr_ch_len = dict_lens[cw_enc];
             substr_ch[substr_ch_len] = substr_ch[0];
             substr_ch_len++;
-            if (di + substr_ch_len >= dest_len) {
-                return di;
-            }
             memcpy(dest+di, substr_ch, substr_ch_len);
             di += substr_ch_len;
             cw_enc = dict_next;
@@ -176,6 +175,9 @@ unsigned int lzw_decompress(const codeword *src, unsigned int len, char *dest, u
     }
     free(dict);
     free(dict_lens);
-    // Return the number of decoded bytes.
-    return di;
+    // Return a pointer to the string and its length.
+    decompression_meta m;
+    m.str = dest;
+    m.dlen = di;
+    return m;
 }

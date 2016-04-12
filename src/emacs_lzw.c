@@ -67,25 +67,18 @@ emacs_value compress_string(emacs_env *env, ptrdiff_t nargs,
 
     // Compress it.
     dlen = lzw_compress(buf, len, code);
-    code_as_char = malloc(sizeof(codeword) * dlen);
 
     // Represent code[] in code_as_char[].
     // Each multibyte element of code is
     // represented by several consecutive bytes in
     // code_as_char.
-    unsigned int i, j;
-    codeword *cwp;
-    for (i = 0, j = 0; i < dlen * sizeof(codeword); i += sizeof(codeword), j++) {
-        cwp = (codeword*)(code_as_char+i);
-        *cwp = code[j];
-    }
+    code_as_char = (char*)code;
 
     // Make a vector out of the compressed string
     // and cleanup.
     emacs_value compressed = make_vector(env, code_as_char, sizeof(codeword)*dlen);
     free(buf);
     free(code);
-    free(code_as_char);
     // Purposefully ignore those.
     nargs = 0; data = 0;
     return compressed;
@@ -102,48 +95,60 @@ emacs_value decompress_string(emacs_env *env, ptrdiff_t nargs,
     vec = args[0];
     len = env->vec_size(env, vec);
     code_as_char = malloc(sizeof(char) * len);
-    code = malloc(sizeof(codeword) * (len/sizeof(codeword)));
     for (unsigned int i = 0; i < len; i++) {
         code_as_char[i] = env->extract_integer(env, env->vec_get(env, vec, i));
     }
 
     // Collapse bytes in code_as_char[] into
     // multibyte codewords in code[].
-    unsigned int i, j;
-    codeword *cwp;
-    for (i = 0, j = 0; i < len; i += sizeof(codeword), j++) {
-        cwp = (codeword*)(code_as_char+i);
-        code[j] = *cwp;
-    }
-    len /= sizeof(codeword);
+    code = (codeword*)code_as_char;
+    len = len / sizeof(codeword);
     
-    unsigned int  str_len;      // Length of decompressed string.
     char         *str;          // Decompressed string.
-    unsigned int  dlen;         // Bytes decompressed so far.
+    unsigned int  dlen;         // Bytes decompressed.
 
-    // Make a generous assumption for the length of
-    // the decompressed string. This will get doubled
-    // when insufficient.
-    str_len = sizeof(char) * (len*10);
-    str = malloc(str_len);
-    dlen = 0;
-
-    // Try to decompress the string into str_len bytes.
-    while ((dlen = lzw_decompress(code, len, str, str_len)) == str_len) {
-        str_len *= 2;
-        str = realloc(str, str_len);
-    }
+    // Decompress the string.
+    decompression_meta m = lzw_decompress(code, len);
+    str = m.str;
+    dlen = m.dlen;
 
     // Convert the decompressed string into an Emacs string
     // and cleanup.
     emacs_value decompressed = env->make_string(env, str, dlen-1);
     free(str);
-    free(code);
     free(code_as_char);
     // Purposefully ignore those.
     nargs = 0; data = 0;
     return decompressed;
 }
+
+emacs_value compress_file(emacs_env *env, ptrdiff_t nargs,
+                          emacs_value args[], void *data) {
+    ptrdiff_t path_len = 512;
+    char path[path_len];
+    emacs_value i_t = env->intern(env, "t");
+    emacs_value i_nil = env->intern(env, "nil");
+
+    env->copy_string_contents(env, args[0], path, &path_len);
+                          
+    char buf[400000];
+    unsigned long long buf_size = 0;
+    FILE *f = fopen(path, "rb");
+    if (f == NULL) {
+        return i_nil;
+    }
+    fseek(f, 0, SEEK_END);
+    buf_size = ftell(f);
+    fseek(f, 0, SEEK_SET);
+    if (fread(buf, sizeof(char), buf_size, f) != buf_size) {
+        return i_nil;
+    }
+
+    //mmap
+    nargs=0; data=0;
+    return i_t;
+}
+    
 
 int emacs_module_init(struct emacs_runtime *ert) {
     emacs_env *env = ert->get_environment(ert);

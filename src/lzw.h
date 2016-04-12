@@ -28,7 +28,12 @@
 
 #include "trie.h"
 
+typedef struct {
+    char *str;
+    unsigned int dlen;
+} decompression_meta;
+
 unsigned int lzw_compress   (const char *src, unsigned int len, codeword *dest);
-unsigned int lzw_decompress (const codeword *src, unsigned int len, char *dest, unsigned int dest_len);
+decompression_meta lzw_decompress (const codeword *src, unsigned int len);
 
 #endif

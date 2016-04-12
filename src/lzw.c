@@ -33,7 +33,7 @@
 #include <stdlib.h>
 #include <string.h>
 
-#define BUF_SIZE 512
+#define BUF_SIZE 32768
 
 unsigned int lzw_compress(const char *src, unsigned int len, codeword *dest) {
     // Construct initial dictionary.

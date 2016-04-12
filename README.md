@@ -3,7 +3,7 @@
 This is an implementation of the popular Lempel-Ziv-Welch compression
 algorithm that can run within Emacs.
 
-![demo](http://i.imgur.com/pDREZuJ.gifv)
+![demo](http://i.imgur.com/pDREZuJ.gif)
 
 It consists of C source code that gets compiled into a shared library
 and can be loaded dynamically by Emacs (>25), and some Lisp code that

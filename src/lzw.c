@@ -15,13 +15,13 @@
 
     You should have received a copy of the GNU General Public License
     along with emacs-lzw. If not, see http://www.gnu.org/licenses/.
-    
+
     Commentary:
 
     Implementation of the LZW compression algorithm using a Trie for
     the dictionary when compressing, and an array of strings when
     decompressing.
-    
+
     The output of the compression is an array of fixed-length codewords.
     Writing them efficiently to a file is handled by a different
     component, io.c
@@ -81,12 +81,12 @@ decompression_meta lzw_decompress(const codeword *src, unsigned int len) {
     unsigned int   dict_size = 256+1;
     unsigned int   dict_next = 256+1;
     // An array of unterminated strings.
-    char         **dict      = malloc(sizeof(char*) * dict_size); 
+    char         **dict      = malloc(sizeof(char*) * dict_size);
     // The length of each string in dict, because they are not
     // null-terminated.
     unsigned int  *dict_lens = malloc(sizeof(unsigned int) * dict_size);
     // This time it's a short, because it iterates 1-256.
-    short          c;           
+    short          c;
 
     c = 1;
     do {

@@ -3,3 +3,7 @@ trie_test
 /lzw_test
 /emacs-lzw.so
 emacs_lzw.so
+/cscope.files
+/cscope.out
+/src/cscope.files
+/src/cscope.out

@@ -56,8 +56,8 @@ struct trie {
 TrieNode* trie_node_create    (const char *str, unsigned int len, codeword cw);
 void      trie_node_add_child (TrieNode *node, char c, TrieNode *child);
 TrieNode* lookup_child        (TrieNode *node, char c);
-void      trie_node_destroy(TrieNode *node);
-void      trie_child_destroy(TrieChild *child);
+void      trie_node_destroy   (TrieNode *node);
+void      trie_child_destroy  (TrieChild *child);
 
 // API implementation.
 
